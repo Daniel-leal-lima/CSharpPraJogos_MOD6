@@ -241,14 +241,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecdfa802986826946a7ee10b3d2d0e7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  patrolData1:
-    PatrolDuration: 5
-    MoveSpeed: 1
-    MoveDirectionDuration: 1
-  patrolData2:
-    PatrolDuration: 10
-    MoveSpeed: 4
+  patrolBehaviours:
+  - PatrolDuration: 2
+    MoveSpeed: 5
     MoveDirectionDuration: 2
+    waitDuration: 1
+  - PatrolDuration: 5
+    MoveSpeed: 5
+    MoveDirectionDuration: 2
+    waitDuration: 0
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

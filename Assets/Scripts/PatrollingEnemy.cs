@@ -2,12 +2,23 @@ using UnityEngine;
 
 public class PatrollingEnemy : MonoBehaviour
 {
+    [SerializeField] PatrolData[] patrolBehaviours;
+
+
+    [System.Serializable]
+    public struct PatrolData
+    {
+        public float PatrolDuration;
+        public float MoveSpeed;
+        public float MoveDirectionDuration;
+        public float waitDuration;
+    }
 
     enum EnemyState
     {
         Stopped,
-        Patrolling1,
-        Patrolling2
+        Waiting,
+        Patrolling
     }
 
     enum PatrolDirection
@@ -16,22 +27,7 @@ public class PatrollingEnemy : MonoBehaviour
         Right
     }
 
-
-    [System.Serializable]
-    struct PatrolData
-    {
-        public float PatrolDuration;
-        public float MoveSpeed;
-        public float MoveDirectionDuration;
-    }
-
     EnemyState currentEnemyState;
-
-    [SerializeField]
-    PatrolData patrolData1;
-
-    [SerializeField]
-    PatrolData patrolData2;
 
     PatrolDirection currentPatrolDirection;
 
@@ -39,11 +35,20 @@ public class PatrollingEnemy : MonoBehaviour
 
     float directionChangeTime;
 
+    float waitTime;
+
+    PatrolData currentPatrolData;
+
+    int patrolIndex;
+
+
     void Start()
     {
+        currentPatrolData = patrolBehaviours[0];
         currentEnemyState = EnemyState.Stopped;
         currentPatrolDirection = PatrolDirection.Right;
         directionChangeTime = 0;
+        patrolIndex = -1;
     }
 
     void Update()
@@ -54,37 +59,54 @@ public class PatrollingEnemy : MonoBehaviour
             case EnemyState.Stopped:
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    currentEnemyState = EnemyState.Patrolling1;
+                    if (patrolIndex < patrolBehaviours.Length - 1)
+                    {
+                        patrolIndex++;
+                        currentPatrolData = patrolBehaviours[patrolIndex];
+                    }
+                    currentEnemyState = EnemyState.Patrolling;
                     startPatrolTime = Time.time;
+                    waitTime = 0;
                 }
                 break;
 
-            case EnemyState.Patrolling1:
-                if (Time.time > startPatrolTime + patrolData1.PatrolDuration)
-                {
-                    currentEnemyState = EnemyState.Patrolling2;
-                }
-
-                else
-                {
-                    PatrolRoutine(patrolData1);
-                }
-
+            case EnemyState.Waiting:
+                Wait(currentPatrolData);
                 break;
 
-            case EnemyState.Patrolling2:
-                if (Time.time > startPatrolTime + patrolData2.PatrolDuration)
+            case EnemyState.Patrolling:
+
+                if (Input.GetKeyDown(KeyCode.Space))
                 {
                     currentEnemyState = EnemyState.Stopped;
                 }
 
+                if (Time.time > startPatrolTime + currentPatrolData.PatrolDuration)
+                {
+                    currentEnemyState = EnemyState.Waiting;
+                }
+
                 else
                 {
-                    PatrolRoutine(patrolData2);
+                    PatrolRoutine(currentPatrolData);
                 }
 
                 break;
         }
+    }
+
+
+    void Wait(PatrolData patrolData)
+    {
+        if (waitTime < patrolData.waitDuration)
+        {
+            waitTime += Time.deltaTime;
+        }
+        else
+        {
+            currentEnemyState = EnemyState.Stopped;
+        }
+
     }
 
     void PatrolRoutine(PatrolData patrolData)
